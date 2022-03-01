@@ -1,6 +1,6 @@
 import torch.nn as nn
 from torch.utils import model_zoo
-
+import torch
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
@@ -155,4 +155,7 @@ def resnet18(pretrained=False, **kwargs):
     return model
 
 if __name__ == '__main__':
-    resnet18()
+    x = torch.randn((1, 3, 416, 416))
+    model = resnet18()
+    y = model(x)
+    print(y.shape)

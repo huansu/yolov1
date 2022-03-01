@@ -28,21 +28,23 @@ class YoloBody(nn.Module):
         )
 
         # pred
-        self.pred = nn.Conv2d(512, 1 + self.num_classes + 4, kernel_size=1)
+        self.pred = nn.Conv2d(512, (1+4) + self.num_classes, kernel_size=1)
 
     def forward(self, x):
         # backbone主干网络
-        c5 = self.backbone(x)
+        c5 = self.backbone(x)  # 512 channels, torch.Size([1, 512, 13, 13])
 
         # neck网络
-        p5 = self.neck(c5)
+        p5 = self.neck(c5)     # SPP()输出torch.Size([1, 2048, 13, 13])
+                               # conv层接SPP后p5输出torch.Size([1, 512, 13, 13])
 
         # detection head网络
-        p5 = self.convsets(p5)
+        p5 = self.convsets(p5)  # torch.Size([1, 512, 13, 13])
 
         # 预测层
-        pred = self.pred(p5)
+        pred = self.pred(p5)   # torch.Size([1, 25, 13, 13])
 
+        # Batch_size, Channels, Height, Width
         # [B, C, H, W] -> [B, C, H*W] -> [B, H*W, C]
         # 理解维度转换，如何对应输出
         pred = pred.view(p5.size(0), 1 + self.num_classes + 4, -1).permute(0, 2, 1)
@@ -89,6 +91,6 @@ class SPP(nn.Module):
 if __name__ == '__main__':
     # 模型结构测试
     x = torch.randn((1, 3, 416, 416))
-    net = YoloBody(num_classes=20)
-    y = net(x)
+    model = YoloBody(num_classes=20)
+    y = model(x)
     print(y)
